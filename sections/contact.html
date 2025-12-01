@@ -1,0 +1,61 @@
+<!-- Contact Section -->
+<section id="contact" class="fade-in">
+    <h2 class="section-title" data-translate="contact.title">Let's Connect</h2>
+    
+    <div class="contact-container">
+        <!-- Contact Form -->
+        <div class="contact-form-wrapper">
+            <h3 data-translate="contact.formTitle">Send me a message</h3>
+            <form id="contactForm" class="contact-form">
+                <div class="form-group">
+                    <label for="name" data-translate="contact.formName">Name</label>
+                    <input type="text" id="name" name="name" required data-translate-placeholder="contact.formNamePlaceholder" placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label for="email" data-translate="contact.formEmail">Email</label>
+                    <input type="email" id="email" name="email" required data-translate-placeholder="contact.formEmailPlaceholder" placeholder="your.email@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="subject" data-translate="contact.formSubject">Subject</label>
+                    <input type="text" id="subject" name="subject" required data-translate-placeholder="contact.formSubjectPlaceholder" placeholder="Subject">
+                </div>
+                <div class="form-group">
+                    <label for="message" data-translate="contact.formMessage">Message</label>
+                    <textarea id="message" name="message" rows="5" required data-translate-placeholder="contact.formMessagePlaceholder" placeholder="Your message"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" data-translate="contact.formSubmit">Send Message</button>
+                <div id="formMessage" class="form-message"></div>
+            </form>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="contact-info-wrapper">
+            <h3 data-translate="contact.infoTitle">Get in touch</h3>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <div class="contact-icon linkedin-icon"></div>
+                    <h3 data-translate="contact.linkedin">LinkedIn</h3>
+                    <a href="https://www.linkedin.com/in/omar-laraje-998827233/" target="_blank" data-translate="contact.connectMe">Connect with me</a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon github-icon"></div>
+                    <h3 data-translate="contact.github">GitHub</h3>
+                    <a href="https://github.com/omarlr-pro" target="_blank" data-translate="contact.viewCode">View my code</a>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon location-icon"></div>
+                    <h3 data-translate="contact.location">Location</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;" data-translate="contact.locationValue">Rabat, Morocco</p>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon building-icon"></div>
+                    <h3 data-translate="contact.currentRole">Current Role</h3>
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;" data-translate="contact.roleValue">Intern at MASEN</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
