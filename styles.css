@@ -244,7 +244,7 @@ body.light-mode .logo {
 .nav-links a {
     color: var(--text);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease;
     position: relative;
 }
 
@@ -290,6 +290,9 @@ body.light-mode .nav-links a::after {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.9rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+    user-select: none;
 }
 
 .lang-btn:hover,
@@ -341,23 +344,32 @@ body.light-mode .theme-icon {
     display: none;
     flex-direction: column;
     justify-content: space-around;
-    width: 30px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0;
+    padding: 7px;
     z-index: 1001;
     position: relative;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+    user-select: none;
+    pointer-events: auto;
 }
 
 .mobile-menu-toggle span {
+    display: block;
     width: 100%;
     height: 3px;
     background: var(--text);
     border-radius: 3px;
     transition: all 0.3s ease;
     transform-origin: center;
+    margin: 4px 0;
+    pointer-events: none;
 }
 
 .mobile-menu-toggle.active span:nth-child(1) {
@@ -373,48 +385,7 @@ body.light-mode .theme-icon {
 }
 
 /* RTL Support for Arabic */
-body[dir="rtl"] {
-    direction: rtl;
-}
 
-body[dir="rtl"] .nav-container {
-    flex-direction: row-reverse;
-}
-
-body[dir="rtl"] .nav-links {
-    flex-direction: row-reverse;
-}
-
-body[dir="rtl"] .timeline::before {
-    left: auto;
-    right: 50%;
-}
-
-body[dir="rtl"] .timeline-item:nth-child(odd) {
-    flex-direction: row;
-}
-
-body[dir="rtl"] .timeline-item:nth-child(even) {
-    flex-direction: row-reverse;
-}
-
-body[dir="rtl"] .timeline-dot {
-    left: auto;
-    right: 50%;
-    transform: translateX(50%);
-}
-
-@media (max-width: 768px) {
-    body[dir="rtl"] .timeline-content {
-        margin-right: 2rem;
-        margin-left: 0;
-    }
-
-    body[dir="rtl"] .timeline-dot {
-        right: 0;
-        left: auto;
-    }
-}
 
 /* Hero Section */
 .hero {
@@ -990,6 +961,11 @@ body.light-mode footer {
     background: rgba(255, 255, 255, 0.9);
 }
 
+/* Hide mobile controls on desktop */
+.mobile-controls {
+    display: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .hero h1 {
@@ -1001,24 +977,68 @@ body.light-mode footer {
     }
 
     .mobile-menu-toggle {
-        display: flex;
-        position: relative;
+        display: flex !important;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 44px;
+        height: 44px;
+        padding: 7px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
         z-index: 1001;
+        position: relative;
+        pointer-events: auto !important;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
     }
+    
+    .mobile-menu-toggle:active {
+        opacity: 0.7;
+    }
+    
+    .mobile-menu-toggle span {
+        display: block;
+        width: 100%;
+        height: 3px;
+        background: var(--text);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        margin: 4px 0;
+        transform-origin: center;
+    }
+
+    .mobile-menu-toggle.active span:nth-child(1) {
+        transform: translateY(11px) rotate(45deg);
+    }
+
+    .mobile-menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    .mobile-menu-toggle.active span:nth-child(3) {
+        transform: translateY(-11px) rotate(-45deg);
+    }
+    
 
     .nav-links {
         position: fixed;
         top: 0;
-        right: -100%;
-        width: 280px;
-        height: 100vh;
+        left: -100%;
+        width: 100% !important;
+        height: 100vh !important;
         background: rgba(15, 23, 42, 0.98);
         backdrop-filter: blur(20px);
-        flex-direction: column;
+        flex-direction: column !important;
         padding: 4rem 2rem 2rem;
-        transition: right 0.3s ease;
+        transition: right 0.3s ease, left 0.3s ease;
         z-index: 1000;
-        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
+        box-shadow: 5px 0 20px rgba(0, 0, 0, 0.3);
+        overflow-y: auto;
+        display: flex !important;
+        list-style: none !important;
     }
 
     body.light-mode .nav-links {
@@ -1026,25 +1046,25 @@ body.light-mode footer {
     }
 
     .nav-links.active {
-        right: 0;
+        left: 0;
     }
 
     /* Position close button inside menu when open */
     body.menu-open .mobile-menu-toggle {
         position: fixed;
         top: 1.5rem;
-        right: 1.5rem;
-        z-index: 1002;
-    }
-
-    body[dir="rtl"].menu-open .mobile-menu-toggle {
-        right: auto;
         left: 1.5rem;
+        z-index: 1002;
     }
 
     .nav-links li {
         width: 100%;
         margin-bottom: 1rem;
+    }
+
+    .nav-links li.mobile-controls {
+        margin-bottom: 0;
+        list-style: none;
     }
 
     .nav-links a {
@@ -1064,15 +1084,82 @@ body.light-mode footer {
         color: var(--primary);
     }
 
+    /* Hide desktop nav-controls on mobile */
     .nav-controls {
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        display: none !important;
+    }
+    
+    /* Ensure mobile menu button is always visible and clickable */
+    .nav-container {
+        position: relative;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Make button always visible and on top */
+    .mobile-menu-toggle {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        position: relative !important;
+        z-index: 1001 !important;
+        order: -999; /* Always first (left side) */
     }
 
-    .lang-btn,
-    .theme-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
+    /* Mobile controls inside menu */
+    .mobile-controls {
+        display: block;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    body.light-mode .mobile-controls {
+        border-top-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-controls-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    .nav-controls-mobile .lang-switcher {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-controls-mobile .theme-switcher {
+        display: flex;
+        justify-content: center;
+    }
+
+    .nav-controls-mobile .lang-btn,
+    .nav-controls-mobile .theme-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 1rem;
+        min-width: 50px;
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .nav-controls-mobile .lang-btn:active,
+    .nav-controls-mobile .theme-btn:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    .nav-controls-mobile .lang-btn,
+    .nav-controls-mobile .theme-btn {
+        pointer-events: auto;
+        position: relative;
+        z-index: 1;
     }
 
     .timeline::before {
@@ -1123,16 +1210,6 @@ body.light-mode footer {
     }
 }
 
-body[dir="rtl"] .nav-links {
-    right: auto;
-    left: -100%;
-}
-
-body[dir="rtl"] .nav-links.active {
-    left: 0;
-    right: auto;
-}
-
 /* Scroll Animation */
 .fade-in {
     opacity: 0;
@@ -1165,23 +1242,6 @@ body[dir="rtl"] .nav-links.active {
 
 .slide-in-right.visible {
     opacity: 1;
-    transform: translateX(0);
-}
-
-/* RTL support for slide animations */
-body[dir="rtl"] .slide-in-left {
-    transform: translateX(100px);
-}
-
-body[dir="rtl"] .slide-in-right {
-    transform: translateX(-100px);
-}
-
-body[dir="rtl"] .slide-in-left.visible {
-    transform: translateX(0);
-}
-
-body[dir="rtl"] .slide-in-right.visible {
     transform: translateX(0);
 }
 
@@ -1219,11 +1279,6 @@ body.light-mode .scroll-to-top {
 
 .scroll-to-top.visible {
     display: flex;
-}
-
-body[dir="rtl"] .scroll-to-top {
-    right: auto;
-    left: 2rem;
 }
 
 /* Project Filters */

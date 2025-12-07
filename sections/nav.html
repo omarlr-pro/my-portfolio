@@ -2,7 +2,7 @@
     <div class="nav-container">
         <div class="logo">OL</div>
 
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu" type="button">
             <span></span>
             <span></span>
             <span></span>
@@ -17,13 +17,25 @@
             <li><a href="#education" data-translate="nav.education">Education</a></li>
             <li><a href="#certifications" data-translate="nav.certifications">Certifications</a></li>
             <li><a href="#contact" data-translate="nav.contact">Contact</a></li>
+            <li class="mobile-controls">
+                <div class="nav-controls-mobile">
+                    <div class="lang-switcher">
+                        <button class="lang-btn" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                    </div>
+                    <div class="theme-switcher">
+                        <button class="theme-btn" id="themeToggleMobile" aria-label="Toggle theme">
+                            <span class="theme-icon">☾</span>
+                        </button>
+                    </div>
+                </div>
+            </li>
         </ul>
 
         <div class="nav-controls">
             <div class="lang-switcher">
                 <button class="lang-btn" data-lang="en">EN</button>
                 <button class="lang-btn" data-lang="fr">FR</button>
-                <button class="lang-btn" data-lang="ar">AR</button>
             </div>
 
             <div class="theme-switcher">
@@ -34,3 +46,89 @@
         </div>
     </div>
 </nav>
+
+<script>
+// Inline menu handler - MUST work before any other scripts load
+console.log('[MENU SETUP] Starting menu initialization');
+
+function initMobileMenu() {
+    const btn = document.getElementById('mobileMenuToggle');
+    const nav = document.getElementById('navLinks');
+    
+    if (!btn || !nav) {
+        console.log('[MENU SETUP] Elements not ready, retrying...');
+        setTimeout(initMobileMenu, 50);
+        return;
+    }
+    
+    console.log('[MENU SETUP] Elements found, attaching listeners');
+    
+    // Function to toggle menu
+    function toggleMenu() {
+        console.log('[MENU] Toggle called');
+        console.log('[MENU] Button element:', btn);
+        const isActive = nav.classList.contains('active');
+        
+        if (isActive) {
+            nav.classList.remove('active');
+            btn.classList.remove('active');
+            document.body.classList.remove('menu-open');
+            document.body.style.overflow = '';
+            console.log('[MENU] ✓ Closed - removed .active class');
+            console.log('[MENU] Button classes now:', btn.className);
+        } else {
+            nav.classList.add('active');
+            btn.classList.add('active');
+            document.body.classList.add('menu-open');
+            document.body.style.overflow = 'hidden';
+            console.log('[MENU] ✓ Opened - added .active class');
+            console.log('[MENU] Button classes now:', btn.className);
+        }
+    }
+    
+    // Click handler
+    btn.addEventListener('click', function(e) {
+        console.log('[MENU] Click event fired');
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        toggleMenu();
+        return false;
+    }, true);
+    
+    // Touch handlers for mobile
+    btn.addEventListener('touchstart', function(e) {
+        console.log('[MENU] Touch start');
+        e.preventDefault();
+    }, true);
+    
+    btn.addEventListener('touchend', function(e) {
+        console.log('[MENU] Touch end');
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu();
+        return false;
+    }, true);
+    
+    // Close menu when clicking on nav links
+    nav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            console.log('[MENU] Link clicked');
+            if (nav.classList.contains('active')) {
+                setTimeout(() => toggleMenu(), 300);
+            }
+        });
+    });
+    
+    console.log('[MENU SETUP] Setup complete - menu is ready!');
+}
+
+// Start initialization immediately
+if (document.readyState === 'loading') {
+    console.log('[MENU SETUP] Document loading...');
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+} else {
+    console.log('[MENU SETUP] Document already loaded');
+    initMobileMenu();
+}
+</script>

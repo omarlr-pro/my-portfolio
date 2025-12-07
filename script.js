@@ -21,6 +21,50 @@ function initParticles() {
 let currentLang = localStorage.getItem('language') || 'en';
 let isTranslating = false;
 
+// Calculate age from birth date (ISO format: YYYY-MM-DD)
+function calculateAge(birthIso) {
+    if (!birthIso) return null;
+    const today = new Date();
+    const [y, m, d] = birthIso.split('-').map(Number);
+    const birth = new Date(y, m - 1, d);
+    let age = today.getFullYear() - birth.getFullYear();
+    const mDiff = today.getMonth() - birth.getMonth();
+    if (mDiff < 0 || (mDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+// Replace {age} placeholders in translated text and elements with data-age
+function updateAgeInPage(birthIso = '2002-08-09') {
+    const age = calculateAge(birthIso);
+    if (age === null) return;
+
+    // Replace placeholders inside elements that were translated
+    document.querySelectorAll('[data-translate]').forEach(el => {
+        if (el.textContent && el.textContent.includes('{age}')) {
+            el.textContent = el.textContent.replace(/\{age\}/g, age);
+        }
+    });
+
+    // Replace placeholders inside any other elements that might contain {age}
+    document.querySelectorAll('body *').forEach(el => {
+        if (el.children.length === 0 && el.textContent && el.textContent.includes('{age}')) {
+            el.textContent = el.textContent.replace(/\{age\}/g, age);
+        }
+    });
+
+    // Set data-age attributes where requested
+    document.querySelectorAll('[data-age]').forEach(el => {
+        el.setAttribute('data-age', age.toString());
+        if (el.tagName.toLowerCase() === 'input' || el.tagName.toLowerCase() === 'textarea') {
+            el.value = age;
+        } else if (el.textContent && el.textContent.includes('{age}')) {
+            el.textContent = el.textContent.replace(/\{age\}/g, age);
+        }
+    });
+}
+
 function translatePage(lang) {
     // Prevent multiple simultaneous translations
     if (isTranslating) {
@@ -45,9 +89,6 @@ function translatePage(lang) {
     isTranslating = true;
     currentLang = lang;
     localStorage.setItem('language', lang);
-
-    // Set text direction for Arabic
-    document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
 
     // Update all translatable elements
     document.querySelectorAll('[data-translate]').forEach(element => {
@@ -125,6 +166,13 @@ function translatePage(lang) {
         if (typeof updateSeeMoreButtonText === 'function') {
             updateSeeMoreButtonText();
         }
+
+        // After translations, replace {age} placeholders with the current age
+        try {
+            updateAgeInPage();
+        } catch (e) {
+            console.error('Failed to update age after translation', e);
+        }
     }, 300);
 }
 
@@ -134,17 +182,21 @@ let isDarkMode = localStorage.getItem('theme') !== 'light';
 function toggleTheme() {
     isDarkMode = !isDarkMode;
     const themeBtn = document.getElementById('themeToggle');
+    const themeBtnMobile = document.getElementById('themeToggleMobile');
     const themeIcon = themeBtn?.querySelector('.theme-icon');
+    const themeIconMobile = themeBtnMobile?.querySelector('.theme-icon');
     
-    if (!themeBtn) return;
+    const iconText = isDarkMode ? '☾' : '☀';
 
     if (isDarkMode) {
         document.body.classList.remove('light-mode');
         if (themeIcon) themeIcon.textContent = '☾';
+        if (themeIconMobile) themeIconMobile.textContent = '☾';
         localStorage.setItem('theme', 'dark');
     } else {
         document.body.classList.add('light-mode');
         if (themeIcon) themeIcon.textContent = '☀';
+        if (themeIconMobile) themeIconMobile.textContent = '☀';
         localStorage.setItem('theme', 'light');
     }
 }
@@ -161,52 +213,137 @@ document.addEventListener('click', (e) => {
 
 // Theme toggle event listener - use event delegation (set once)
 document.addEventListener('click', (e) => {
-    if (e.target.id === 'themeToggle' || e.target.closest('#themeToggle')) {
+    if (e.target.id === 'themeToggle' || e.target.closest('#themeToggle') ||
+        e.target.id === 'themeToggleMobile' || e.target.closest('#themeToggleMobile')) {
         toggleTheme();
     }
 });
 
-// Mobile Menu Toggle
-function initMobileMenu() {
-    const mobileToggle = document.getElementById('mobileMenuToggle');
-    const navLinks = document.getElementById('navLinks');
-    let overlay = document.querySelector('.nav-overlay');
+// ==================== MOBILE MENU LOGIC ====================
+// Simple, reliable mobile menu implementation
+
+const MobileMenu = {
+    isOpen: false,
+    button: null,
+    navLinks: null,
     
-    if (!mobileToggle || !navLinks) return;
-
-    // Create overlay if it doesn't exist
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'nav-overlay';
-        document.body.appendChild(overlay);
-    }
-
-    function toggleMenu() {
-        mobileToggle.classList.toggle('active');
-        navLinks.classList.toggle('active');
-        overlay.classList.toggle('active');
-        document.body.classList.toggle('menu-open');
-        document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
-    }
-
-    function closeMenu() {
-        mobileToggle.classList.remove('active');
-        navLinks.classList.remove('active');
-        overlay.classList.remove('active');
+    // Initialize the menu
+    init() {
+        this.button = document.getElementById('mobileMenuToggle');
+        this.navLinks = document.getElementById('navLinks');
+        
+        if (!this.button || !this.navLinks) {
+            console.log('Menu elements not found, retrying...');
+            setTimeout(() => this.init(), 100);
+            return;
+        }
+        
+        console.log('Mobile menu elements found, setting up listeners');
+        this.setupEventListeners();
+        console.log('Mobile menu initialized successfully');
+    },
+    
+    // Setup all event listeners
+    setupEventListeners() {
+        // Button click handler - most important
+        this.button.addEventListener('click', (e) => {
+            console.log('Menu button clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggle();
+        });
+        
+        // Also handle touch start for better mobile support
+        this.button.addEventListener('touchstart', (e) => {
+            console.log('Menu button touched');
+            e.preventDefault();
+        });
+        
+        this.button.addEventListener('touchend', (e) => {
+            console.log('Menu button touch end');
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggle();
+        });
+        
+        // Close menu when clicking nav links
+        this.navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                console.log('Nav link clicked');
+                if (this.isOpen) {
+                    setTimeout(() => this.close(), 300);
+                }
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.isOpen && 
+                e.target !== this.button &&
+                !this.button.contains(e.target) &&
+                !this.navLinks.contains(e.target)) {
+                console.log('Clicked outside, closing menu');
+                this.close();
+            }
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                console.log('Escape pressed, closing menu');
+                this.close();
+            }
+        });
+    },
+    
+    // Toggle menu open/close
+    toggle() {
+        console.log('Toggle called, current state:', this.isOpen);
+        if (this.isOpen) {
+            this.close();
+        } else {
+            this.open();
+        }
+    },
+    
+    // Open the menu
+    open() {
+        console.log('Opening menu');
+        this.isOpen = true;
+        this.button.classList.add('active');
+        this.navLinks.classList.add('active');
+        document.body.classList.add('menu-open');
+        document.body.style.overflow = 'hidden';
+    },
+    
+    // Close the menu
+    close() {
+        console.log('Closing menu');
+        this.isOpen = false;
+        this.button.classList.remove('active');
+        this.navLinks.classList.remove('active');
         document.body.classList.remove('menu-open');
         document.body.style.overflow = '';
     }
+};
 
-    mobileToggle.addEventListener('click', toggleMenu);
-    overlay.addEventListener('click', closeMenu);
-
-    // Close menu when clicking on a link
-    navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-            setTimeout(closeMenu, 300);
-        });
+// Initialize menu as soon as possible
+console.log('Initializing Mobile Menu...');
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOMContentLoaded fired');
+        MobileMenu.init();
     });
+} else {
+    console.log('Document already loaded');
+    MobileMenu.init();
 }
+
+// Also initialize when sections are loaded
+document.addEventListener('sectionsLoaded', () => {
+    console.log('Sections loaded event fired');
+    MobileMenu.init();
+});
 
 // Typewriter effect for hero name
 let typewriterTimeout = null;
@@ -277,22 +414,22 @@ function initTypewriter(delay = 500) {
 function initializeApp() {
     // Set initial theme
     const themeToggle = document.getElementById('themeToggle');
+    const themeToggleMobile = document.getElementById('themeToggleMobile');
     const themeIcon = themeToggle?.querySelector('.theme-icon');
-    if (themeToggle) {
-        const savedTheme = localStorage.getItem('theme');
-        isDarkMode = savedTheme !== 'light';
-        
-        if (!isDarkMode) {
-            document.body.classList.add('light-mode');
-            if (themeIcon) themeIcon.textContent = '☀';
-        } else {
-            document.body.classList.remove('light-mode');
-            if (themeIcon) themeIcon.textContent = '☾';
-        }
+    const themeIconMobile = themeToggleMobile?.querySelector('.theme-icon');
+    
+    const savedTheme = localStorage.getItem('theme');
+    isDarkMode = savedTheme !== 'light';
+    
+    if (!isDarkMode) {
+        document.body.classList.add('light-mode');
+        if (themeIcon) themeIcon.textContent = '☀';
+        if (themeIconMobile) themeIconMobile.textContent = '☀';
+    } else {
+        document.body.classList.remove('light-mode');
+        if (themeIcon) themeIcon.textContent = '☾';
+        if (themeIconMobile) themeIconMobile.textContent = '☾';
     }
-
-    // Initialize mobile menu
-    initMobileMenu();
 
     // Set initial language (wait for translations to be available)
     if (typeof translations !== 'undefined') {
@@ -301,6 +438,13 @@ function initializeApp() {
     
     // Initialize typewriter effect
     initTypewriter();
+
+    // Ensure dynamic age is applied on initial load
+    try {
+        updateAgeInPage();
+    } catch (e) {
+        console.error('Failed to update age on init', e);
+    }
 }
 
 // Smooth Scrolling - use event delegation
@@ -372,12 +516,14 @@ function initScrollObserver() {
 
 // Project Card Click Animation - use event delegation
 document.addEventListener('click', (e) => {
-    const card = e.target.closest('.project-card');
-    if (card) {
-        card.style.transform = 'scale(0.98)';
-        setTimeout(() => {
-            card.style.transform = '';
-        }, 200);
+    if (e.target instanceof Element) {
+        const card = e.target.closest('.project-card');
+        if (card) {
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                card.style.transform = '';
+            }, 200);
+        }
     }
 });
 
@@ -507,14 +653,14 @@ function initCustomCursor() {
     // Hover effects - use event delegation for dynamically loaded elements
     document.addEventListener('mouseenter', (e) => {
         const target = e.target;
-        if (target.matches('a, button, .btn, .project-card, .skill-category, .contact-card, .lang-btn, .theme-btn, .nav-links a')) {
+        if (target && typeof target.matches === 'function' && target.matches('a, button, .btn, .project-card, .skill-category, .contact-card, .lang-btn, .theme-btn, .nav-links a')) {
             cursor.classList.add('hover');
         }
     }, true);
 
     document.addEventListener('mouseleave', (e) => {
         const target = e.target;
-        if (target.matches('a, button, .btn, .project-card, .skill-category, .contact-card, .lang-btn, .theme-btn, .nav-links a')) {
+        if (target && typeof target.matches === 'function' && target.matches('a, button, .btn, .project-card, .skill-category, .contact-card, .lang-btn, .theme-btn, .nav-links a')) {
             cursor.classList.remove('hover');
         }
     }, true);
