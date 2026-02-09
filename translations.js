@@ -166,6 +166,18 @@ const translations = {
             formSuccess: "Thank you! Your message has been sent.",
             formError: "Error sending message. Please try again."
         },
+        chatbot: {
+            title: "Ask Omar AI",
+            placeholder: "Ask about Omar's projects, skills, or experience...",
+            send: "Send",
+            welcome: "Hi! I'm Omar's portfolio assistant. Ask me anything about his profile, projects, or skills.",
+            loading: "Thinking...",
+            errorNoApiUrl: "Missing chatbot API URL configuration.",
+            errorMissingOpenRouterKey: "OpenRouter API key is missing. Add your key in CHATBOT_CONFIG.apiKey.",
+            errorOpenRouterAuth: "OpenRouter authentication failed. Verify your API key in CHATBOT_CONFIG.apiKey.",
+            errorBadResponse: "Invalid API response format.",
+            errorGeneric: "Chatbot is unavailable right now. Please try again in a moment."
+        },
         // Footer
         footer: {
             rights: "Built with passion for data and innovation.",
@@ -337,6 +349,18 @@ const translations = {
             formSubmit: "Envoyer le message",
             formSuccess: "Merci! Votre message a été envoyé.",
             formError: "Erreur lors de l'envoi du message. Veuillez réessayer."
+        },
+        chatbot: {
+            title: "Assistant IA d'Omar",
+            placeholder: "Posez une question sur les projets, compétences ou expériences d'Omar...",
+            send: "Envoyer",
+            welcome: "Bonjour ! Je suis l'assistant du portfolio d'Omar. Posez-moi vos questions sur son profil, ses projets ou ses compétences.",
+            loading: "Je réfléchis...",
+            errorNoApiUrl: "Configuration de l'URL API du chatbot manquante.",
+            errorMissingOpenRouterKey: "La clé API OpenRouter est manquante. Ajoutez votre clé dans CHATBOT_CONFIG.apiKey.",
+            errorOpenRouterAuth: "Échec d'authentification OpenRouter. Vérifiez votre clé API dans CHATBOT_CONFIG.apiKey.",
+            errorBadResponse: "Format de réponse API invalide.",
+            errorGeneric: "Le chatbot est indisponible pour le moment. Veuillez réessayer dans un instant."
         },
         // Footer
         footer: {

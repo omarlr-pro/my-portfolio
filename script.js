@@ -575,6 +575,9 @@ function handleSectionsLoaded() {
     // Initialize contact form
     initContactForm();
 
+    // Initialize chatbot
+    initChatbot();
+
     // Apply translations first, then initialize app
     if (typeof translations !== 'undefined' && currentLang) {
         translatePage(currentLang);
@@ -712,6 +715,7 @@ if (document.readyState === 'loading') {
             initProjectFilters();
             initSeeMoreButton();
             initContactForm();
+            initChatbot();
         }, 500);
     });
 } else {
@@ -723,6 +727,7 @@ if (document.readyState === 'loading') {
             initializeApp();
         }
         initCustomCursor();
+        initChatbot();
     }, 500);
 }
 
@@ -939,4 +944,203 @@ function initContactForm() {
             formMessage.className = 'form-message';
         }, 5000);
     });
+}
+
+let chatbotInitialized = false;
+let chatbotHistory = [];
+
+function getChatbotTranslation(path, fallback) {
+    try {
+        if (typeof translations === 'undefined' || !translations[currentLang]) return fallback;
+        const keys = path.split('.');
+        let value = translations[currentLang];
+        for (const key of keys) {
+            value = value?.[key];
+        }
+        return typeof value === 'string' ? value : fallback;
+    } catch (_) {
+        return fallback;
+    }
+}
+
+function addChatMessage(role, content, className = '') {
+    const messages = document.getElementById('chatbotMessages');
+    if (!messages) return;
+
+    const item = document.createElement('div');
+    item.className = `chatbot-message ${role}${className ? ` ${className}` : ''}`;
+    item.textContent = content;
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+async function requestChatbotReply(userMessage) {
+    const config = window.CHATBOT_CONFIG || {};
+    const apiUrl = config.apiUrl || '';
+    const model = config.model || 'gpt-4o-mini';
+    const apiKey = config.apiKey || '';
+    const siteUrl = config.siteUrl || window.location.origin;
+    const siteName = config.siteName || 'Portfolio Chatbot';
+    const systemPrompt = config.systemPrompt || 'You are a portfolio assistant.';
+    const isOpenRouter = apiUrl.includes('openrouter.ai');
+
+    if (!apiUrl) {
+        throw new Error(getChatbotTranslation('chatbot.errorNoApiUrl', 'Missing API URL.'));
+    }
+
+    if (isOpenRouter && !apiKey) {
+        throw new Error(
+            getChatbotTranslation(
+                'chatbot.errorMissingOpenRouterKey',
+                'OpenRouter API key is missing. Add your key in window.CHATBOT_CONFIG.apiKey.'
+            )
+        );
+    }
+
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (apiKey) {
+        headers.Authorization = `Bearer ${apiKey}`;
+    }
+
+    if (isOpenRouter) {
+        headers['HTTP-Referer'] = siteUrl;
+        headers['X-Title'] = siteName;
+    }
+
+    const payload = {
+        model,
+        messages: [
+            { role: 'system', content: systemPrompt },
+            ...chatbotHistory.slice(-10),
+            { role: 'user', content: userMessage }
+        ],
+        temperature: typeof config.temperature === 'number' ? config.temperature : 0.2,
+        max_tokens: typeof config.maxTokens === 'number' ? config.maxTokens : 500
+    };
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const errorJson = await response.json().catch(() => null);
+        const apiErrorMessage = errorJson?.error?.message || errorJson?.message || '';
+
+        if (response.status === 401 && isOpenRouter) {
+            throw new Error(
+                getChatbotTranslation(
+                    'chatbot.errorOpenRouterAuth',
+                    'OpenRouter authentication failed. Verify your API key in window.CHATBOT_CONFIG.apiKey.'
+                )
+            );
+        }
+
+        throw new Error(apiErrorMessage || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const answer = data?.choices?.[0]?.message?.content;
+    if (!answer || typeof answer !== 'string') {
+        throw new Error(getChatbotTranslation('chatbot.errorBadResponse', 'Invalid API response format.'));
+    }
+
+    return answer.trim();
+}
+
+function initChatbot() {
+    if (chatbotInitialized) return;
+
+    const widget = document.getElementById('chatbotWidget');
+    const toggle = document.getElementById('chatbotToggle');
+    const panel = document.getElementById('chatbotPanel');
+    const close = document.getElementById('chatbotClose');
+    const form = document.getElementById('chatbotForm');
+    const input = document.getElementById('chatbotInput');
+    const send = document.getElementById('chatbotSend');
+
+    if (!widget || !toggle || !panel || !close || !form || !input || !send) {
+        return;
+    }
+
+    const welcomeMessage = getChatbotTranslation(
+        'chatbot.welcome',
+        "Hi! I'm Omar's portfolio assistant. Ask me anything about his profile, projects, or skills."
+    );
+    addChatMessage('bot', welcomeMessage);
+
+    const openPanel = () => {
+        panel.classList.add('open');
+        panel.setAttribute('aria-hidden', 'false');
+        input.focus();
+    };
+
+    const closePanel = () => {
+        panel.classList.remove('open');
+        panel.setAttribute('aria-hidden', 'true');
+    };
+
+    toggle.addEventListener('click', () => {
+        if (panel.classList.contains('open')) {
+            closePanel();
+        } else {
+            openPanel();
+        }
+    });
+
+    close.addEventListener('click', closePanel);
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userMessage = input.value.trim();
+        if (!userMessage) return;
+
+        addChatMessage('user', userMessage);
+        chatbotHistory.push({ role: 'user', content: userMessage });
+
+        input.value = '';
+        input.disabled = true;
+        send.disabled = true;
+
+        const loadingText = getChatbotTranslation('chatbot.loading', 'Thinking...');
+        const messages = document.getElementById('chatbotMessages');
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'chatbot-message bot';
+        loadingEl.textContent = loadingText;
+        messages?.appendChild(loadingEl);
+        if (messages) messages.scrollTop = messages.scrollHeight;
+
+        try {
+            const answer = await requestChatbotReply(userMessage);
+            loadingEl.remove();
+            addChatMessage('bot', answer);
+            chatbotHistory.push({ role: 'assistant', content: answer });
+        } catch (error) {
+            loadingEl.remove();
+            const fallbackError = getChatbotTranslation(
+                'chatbot.errorGeneric',
+                'Chatbot is unavailable right now. Please try again in a moment.'
+            );
+            const detailed = error instanceof Error && error.message
+                ? `${fallbackError} (${error.message})`
+                : fallbackError;
+            addChatMessage('error', detailed, 'error');
+        } finally {
+            input.disabled = false;
+            send.disabled = false;
+            input.focus();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel.classList.contains('open')) {
+            closePanel();
+        }
+    });
+
+    chatbotInitialized = true;
 }

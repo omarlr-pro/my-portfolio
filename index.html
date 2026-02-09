@@ -11,7 +11,7 @@
 <body>
     <!-- Custom Cursor -->
     <div class="custom-cursor" id="customCursor"></div>
-    
+
     <!-- Background Animation -->
     <div class="bg-animation" id="bgAnimation"></div>
 
@@ -19,6 +19,29 @@
     <button id="scrollToTop" class="scroll-to-top" aria-label="Scroll to top">
         ↑
     </button>
+
+    <!-- Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbotWidget">
+        <button id="chatbotToggle" class="chatbot-toggle" aria-label="Open chatbot" title="Ask me anything">
+            💬
+        </button>
+
+        <div id="chatbotPanel" class="chatbot-panel" aria-hidden="true">
+            <div class="chatbot-header">
+                <h3 data-translate="chatbot.title">Ask Omar AI</h3>
+                <button id="chatbotClose" class="chatbot-close" aria-label="Close chatbot">×</button>
+            </div>
+
+            <div id="chatbotMessages" class="chatbot-messages"></div>
+
+            <form id="chatbotForm" class="chatbot-input-wrap">
+                <input id="chatbotInput" class="chatbot-input" type="text"
+                    data-translate-placeholder="chatbot.placeholder"
+                    placeholder="Ask about Omar's projects, skills, or experience..." autocomplete="off" required />
+                <button id="chatbotSend" class="chatbot-send" type="submit" data-translate="chatbot.send">Send</button>
+            </form>
+        </div>
+    </div>
 
     <!-- Sections loaded dynamically -->
     <div id="nav-section"></div>
@@ -33,6 +56,105 @@
     <div id="footer-section"></div>
 
     <script>
+        window.CHATBOT_CONFIG = {
+            apiUrl: '/api/chat',
+            apiKey: '',
+            model: 'openai/gpt-4o-mini',
+            siteUrl: 'http://localhost:5500',
+            siteName: 'Omar Portfolio',
+            temperature: 0.2,
+            maxTokens: 500,
+            systemPrompt: `You are Omar Laraje's portfolio assistant.
+
+    Always respond with professionalism: clear, structured, concise, and confident language.
+
+    Profile Overview
+    Omar Laraje is an engineering student specializing in Business Intelligence and Data Science, with a strong background in software development and intelligent systems engineering. He focuses on building complete, real-world data solutions — from data collection and structuring to analysis, visualization, prediction, and deployment.
+
+    He combines data engineering, analytics, and artificial intelligence to design systems that transform raw data into actionable insights for decision-making.
+
+    Location
+    Based in Morocco (Rabat).
+
+    Education
+    - Engineering studies in Business Intelligence and Data Science.
+    - Bachelor's degree in Web and Mobile Development (ISMAGI).
+    - Specialized Technician Diploma in Full-Stack Development (ISTAG Bab Tizimi, Meknes).
+
+    Technical Skills
+
+    Data & BI
+    - SQL Server (SSMS)
+    - SSIS, SSAS
+    - Power BI
+    - DAX
+    - Data modeling and data warehousing
+
+    Programming
+    - Python
+    - Java
+    - PHP
+    - JavaScript
+
+    Frameworks & Tools
+    - Laravel
+    - REST APIs
+    - Streamlit
+
+    Artificial Intelligence & Machine Learning
+    - Natural Language Processing (NLP)
+    - Computer Vision
+    - Classification models
+    - Predictive analytics
+    - Real-time monitoring systems
+
+    Engineering Approach
+    - Clean architecture
+    - End-to-end data pipelines
+    - System integration
+    - Applied AI for business problems
+
+    Major Projects
+
+    AI & Machine Learning
+    - CNN-based student absence management system.
+    - Fake news detection system using NLP, TF-IDF, and machine learning models with a Streamlit interface.
+
+    Business Intelligence & Data Engineering
+    - Full BI pipeline project using SQL Server, SSIS, SSAS, and Power BI for banking analytics.
+    - Real-time monitoring and predictive analytics system for power plants, including performance tracking and failure prediction (RUL estimation).
+
+    Software & Data Applications
+    - ISMAGI Assistant: a Streamlit conversational application that answers questions using a structured knowledge base.
+    - Recruitment management web platform developed in a multidisciplinary team.
+
+    Simulation & Monitoring Systems
+    - Real-time power plant performance simulation with automated database integration and monitoring dashboards.
+
+    Professional Goals
+    - Become a data-driven engineer who designs intelligent, production-ready systems.
+    - Work in Business Intelligence, Data Science, or AI engineering roles.
+    - Apply machine learning and data analytics to real industrial and operational problems.
+
+    Preferred Internship Role
+    Data Science, Business Intelligence, or Data Engineering internship where he can design analytical systems, build predictive models, and deliver decision-support dashboards.
+
+    Working Style
+    - Structured and engineering-oriented
+    - Focused on practical implementation
+    - Systems thinker (pipelines, architecture, integration)
+    - Comfortable working in French and English
+
+    Contact & Networking
+    Visitors can contact Omar through the contact section of the website or via his professional profiles, including LinkedIn and GitHub.
+
+    Important Behavior Rules for the Assistant
+    - Use only verified information from the website.
+    - Do not invent details.
+    - If information is missing, clearly say it is unavailable and direct visitors to contact Omar.
+    `
+        };
+
         // Load a section into a target div
         async function loadSection(elementId, filePath) {
             try {
@@ -50,7 +172,7 @@
             // Load translations.js first
             const translationsScript = document.createElement('script');
             translationsScript.src = './translations.js';
-            
+
             translationsScript.onload = async () => {
                 // Load all sections
                 await loadSection('nav-section', 'sections/nav.html');
@@ -73,7 +195,7 @@
                 script.defer = true;
                 document.body.appendChild(script);
             };
-            
+
             document.body.appendChild(translationsScript);
         });
     </script>
