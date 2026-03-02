@@ -36,6 +36,10 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_SITE_URL = process.env.OPENROUTER_SITE_URL || `http://localhost:${PORT}`;
 const OPENROUTER_SITE_NAME = process.env.OPENROUTER_SITE_NAME || 'Omar Portfolio';
+const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGINS || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -54,6 +58,20 @@ const mimeTypes = {
 function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
+}
+
+function setCorsHeaders(req, res) {
+  const requestOrigin = req.headers.origin || '';
+  const defaultAllowed = ['http://localhost:5500', 'http://127.0.0.1:5500'];
+  const allowedOrigins = FRONTEND_ORIGINS.length > 0 ? FRONTEND_ORIGINS : defaultAllowed;
+
+  if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    res.setHeader('Vary', 'Origin');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
 function parseRequestBody(req) {
@@ -77,6 +95,8 @@ function parseRequestBody(req) {
 }
 
 async function handleChat(req, res) {
+  setCorsHeaders(req, res);
+
   if (!OPENROUTER_API_KEY) {
     return sendJson(res, 500, {
       error: {
@@ -170,6 +190,18 @@ function serveStatic(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  setCorsHeaders(req, res);
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.method === 'GET' && req.url === '/health') {
+    return sendJson(res, 200, { ok: true });
+  }
+
   if (req.method === 'POST' && req.url === '/api/chat') {
     await handleChat(req, res);
     return;
