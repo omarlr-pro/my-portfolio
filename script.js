@@ -978,7 +978,7 @@ async function requestChatbotReply(userMessage) {
     const config = window.CHATBOT_CONFIG || {};
     const apiUrl = config.apiUrl || '';
     const model = config.model || 'gpt-4o-mini';
-    const apiKey = config.apiKey || '';
+    const apiKey = typeof config.apiKey === 'string' ? config.apiKey.trim() : '';
     const siteUrl = config.siteUrl || window.location.origin;
     const siteName = config.siteName || 'Portfolio Chatbot';
     const systemPrompt = config.systemPrompt || 'You are a portfolio assistant.';
@@ -988,7 +988,9 @@ async function requestChatbotReply(userMessage) {
         throw new Error(getChatbotTranslation('chatbot.errorNoApiUrl', 'Missing API URL.'));
     }
 
-    if (isOpenRouter && !apiKey) {
+    const isPlaceholderKey = apiKey.toUpperCase().includes('PASTE_YOUR_OPENROUTER_KEY_HERE');
+
+    if (isOpenRouter && (!apiKey || isPlaceholderKey)) {
         throw new Error(
             getChatbotTranslation(
                 'chatbot.errorMissingOpenRouterKey',
