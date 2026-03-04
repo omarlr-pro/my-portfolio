@@ -1054,6 +1054,55 @@ async function requestChatbotReply(userMessage) {
     return answer.trim();
 }
 
+async function sendChatTranscript() {
+    const config = window.CHATBOT_CONFIG || {};
+    const recipientEmail = typeof config.transcriptRecipientEmail === 'string'
+        ? config.transcriptRecipientEmail.trim()
+        : '';
+    const webhookUrl = typeof config.transcriptWebhookUrl === 'string'
+        ? config.transcriptWebhookUrl.trim()
+        : '';
+    const authToken = typeof config.transcriptWebhookAuthToken === 'string'
+        ? config.transcriptWebhookAuthToken.trim()
+        : '';
+
+    if (!webhookUrl) {
+        throw new Error(getChatbotTranslation('chatbot.sendMissingUrl', 'Sending endpoint is not configured.'));
+    }
+
+    const transcript = chatbotHistory.map((item) => ({
+        role: item.role,
+        content: item.content
+    }));
+
+    const payload = {
+        source: 'portfolio-chatbot',
+        recipientEmail,
+        language: currentLang,
+        page: window.location.href,
+        sentAt: new Date().toISOString(),
+        transcript
+    };
+
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+    }
+
+    const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+}
+
 function initChatbot() {
     if (chatbotInitialized) return;
 
@@ -1061,11 +1110,13 @@ function initChatbot() {
     const toggle = document.getElementById('chatbotToggle');
     const panel = document.getElementById('chatbotPanel');
     const close = document.getElementById('chatbotClose');
+    const end = document.getElementById('chatbotEnd');
+    const notice = document.getElementById('chatbotNotice');
     const form = document.getElementById('chatbotForm');
     const input = document.getElementById('chatbotInput');
     const send = document.getElementById('chatbotSend');
 
-    if (!widget || !toggle || !panel || !close || !form || !input || !send) {
+    if (!widget || !toggle || !panel || !close || !end || !notice || !form || !input || !send) {
         return;
     }
 
@@ -1086,6 +1137,20 @@ function initChatbot() {
         panel.setAttribute('aria-hidden', 'true');
     };
 
+    let noticeTimer = null;
+    const showNotice = (message) => {
+        notice.textContent = message;
+        notice.classList.add('visible');
+
+        if (noticeTimer) {
+            clearTimeout(noticeTimer);
+        }
+
+        noticeTimer = setTimeout(() => {
+            notice.classList.remove('visible');
+        }, 3200);
+    };
+
     toggle.addEventListener('click', () => {
         if (panel.classList.contains('open')) {
             closePanel();
@@ -1095,6 +1160,43 @@ function initChatbot() {
     });
 
     close.addEventListener('click', closePanel);
+
+    end.addEventListener('click', async () => {
+        const hasConversation = chatbotHistory.some((item) => item.role === 'user' || item.role === 'assistant');
+        if (!hasConversation) {
+            showNotice(getChatbotTranslation('chatbot.noConversation', 'No conversation to send yet.'));
+            return;
+        }
+
+        showNotice(getChatbotTranslation('chatbot.endNotice', 'This conversation will be sent to the owner.'));
+
+        end.disabled = true;
+        input.disabled = true;
+        send.disabled = true;
+
+        try {
+            showNotice(getChatbotTranslation('chatbot.sending', 'Sending conversation...'));
+            await sendChatTranscript();
+            showNotice(getChatbotTranslation('chatbot.sentSuccess', 'Conversation sent to the owner.'));
+            chatbotHistory = [];
+            setTimeout(() => {
+                closePanel();
+            }, 900);
+        } catch (error) {
+            const fallbackError = getChatbotTranslation(
+                'chatbot.sendError',
+                'Failed to send conversation. Please try again.'
+            );
+            const detailed = error instanceof Error && error.message
+                ? `${fallbackError} (${error.message})`
+                : fallbackError;
+            showNotice(detailed);
+        } finally {
+            end.disabled = false;
+            input.disabled = false;
+            send.disabled = false;
+        }
+    });
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

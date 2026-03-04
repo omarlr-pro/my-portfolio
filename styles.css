@@ -397,6 +397,26 @@ body.light-mode .lang-btn.active {
     color: var(--text);
 }
 
+.chatbot-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.chatbot-end {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.chatbot-end:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 .chatbot-close {
     background: transparent;
     border: none;
@@ -485,6 +505,22 @@ body.light-mode .lang-btn.active {
     cursor: not-allowed;
 }
 
+.chatbot-notice {
+    display: none;
+    margin: 0.45rem 0.8rem 0;
+    padding: 0.45rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chatbot-notice.visible {
+    display: block;
+}
+
 body.light-mode .chatbot-toggle {
     background: rgba(255, 255, 255, 0.95);
     color: #000000;
@@ -506,6 +542,15 @@ body.light-mode .chatbot-close {
     color: #000000;
 }
 
+body.light-mode .chatbot-end {
+    color: #000000;
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+body.light-mode .chatbot-end:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
 body.light-mode .chatbot-message.bot,
 body.light-mode .chatbot-message.error {
     background: rgba(0, 0, 0, 0.06);
@@ -523,6 +568,12 @@ body.light-mode .chatbot-send {
     background: #000000;
     color: #ffffff;
     border-color: rgba(0, 0, 0, 0.5);
+}
+
+body.light-mode .chatbot-notice {
+    color: #000000;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 768px) {
