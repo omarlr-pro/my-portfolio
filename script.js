@@ -691,22 +691,27 @@ function initCustomCursor() {
 }
 
 // Scroll to Top Button
+let scrollToTopInitialized = false;
+
 function initScrollToTop() {
     const scrollBtn = document.getElementById('scrollToTop');
-    if (!scrollBtn) return;
+    if (!scrollBtn || scrollToTopInitialized) return;
 
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            scrollBtn.classList.add('visible');
-        } else {
-            scrollBtn.classList.remove('visible');
-        }
-    });
+    const updateVisibility = () => {
+        scrollBtn.classList.toggle('visible', window.scrollY > 300);
+        scrollBtn.setAttribute('aria-hidden', window.scrollY > 300 ? 'false' : 'true');
+    };
+
+    scrollToTopInitialized = true;
+    scrollBtn.setAttribute('aria-hidden', 'true');
+    window.addEventListener('scroll', updateVisibility, { passive: true });
+
+    updateVisibility();
 
     scrollBtn.addEventListener('click', () => {
         window.scrollTo({
             top: 0,
-            behavior: 'smooth'
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
         });
     });
 }

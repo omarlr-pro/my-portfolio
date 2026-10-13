@@ -870,6 +870,40 @@ body.light-mode .skill-category h3 {
     border-radius: 20px;
     font-size: 0.9rem;
     border: 1px solid rgba(0, 0, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.25rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.skill-tag img {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: 0 0 1.1rem;
+    object-fit: contain;
+    filter: invert(1);
+}
+
+.skill-tag:hover,
+.skill-tag:focus-within {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+body.light-mode .skill-tag {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .skill-tag img {
+    filter: none;
+}
+
+body.light-mode .skill-tag:hover,
+body.light-mode .skill-tag:focus-within {
+    background: rgba(0, 0, 0, 0.06);
 }
 
 /* Projects Section */
@@ -1507,21 +1541,31 @@ body.light-mode footer {
 .scroll-to-top {
     position: fixed;
     bottom: 2rem;
-    right: 2rem;
+    right: 6.5rem;
     width: 50px;
     height: 50px;
     background: rgba(255, 255, 255, 0.9);
     color: #000000;
     border: 2px solid #000000;
     border-radius: 50%;
-    font-size: 1.5rem;
     cursor: pointer;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(0.5rem);
+    transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-to-top svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke: currentColor;
+    stroke-width: 2;
 }
 
 body.light-mode .scroll-to-top {
@@ -1536,7 +1580,15 @@ body.light-mode .scroll-to-top {
 }
 
 .scroll-to-top.visible {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.scroll-to-top:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 3px;
 }
 
 /* Project Filters */
@@ -1849,13 +1901,19 @@ body.light-mode .cert-card h3 {
 
     .scroll-to-top {
         bottom: 1.5rem;
-        right: 1.5rem;
+        right: 5.75rem;
         width: 45px;
         height: 45px;
-        font-size: 1.2rem;
     }
 
     body[dir="rtl"] .scroll-to-top {
         left: 1.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skill-tag,
+    .scroll-to-top {
+        transition: none;
     }
 }
