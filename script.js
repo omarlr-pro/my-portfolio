@@ -20,6 +20,7 @@ function initParticles() {
 // Language Switcher
 let currentLang = localStorage.getItem('language') || 'en';
 let isTranslating = false;
+let hasTranslatedPage = false;
 
 // Calculate age from birth date (ISO format: YYYY-MM-DD)
 function calculateAge(birthIso) {
@@ -72,22 +73,21 @@ function translatePage(lang) {
     }
     
     if (typeof translations === 'undefined') {
-        console.error('Translations not loaded yet');
         return;
     }
 
     if (!translations[lang]) {
-        console.error(`Language ${lang} not found in translations`);
         return;
     }
 
     // Don't translate if it's the same language
-    if (currentLang === lang) {
+    if (currentLang === lang && hasTranslatedPage) {
         return;
     }
 
     isTranslating = true;
     currentLang = lang;
+    hasTranslatedPage = true;
     localStorage.setItem('language', lang);
 
     // Update all translatable elements
@@ -101,7 +101,6 @@ function translatePage(lang) {
             if (translation && translation[key]) {
                 translation = translation[key];
             } else {
-                console.warn(`Translation key not found: ${keys.join('.')} for language ${lang}`);
                 return;
             }
         }
@@ -170,8 +169,8 @@ function translatePage(lang) {
         // After translations, replace {age} placeholders with the current age
         try {
             updateAgeInPage();
-        } catch (e) {
-            console.error('Failed to update age after translation', e);
+        } catch (_) {
+            // Age placeholders are optional.
         }
     }, 300);
 }
@@ -186,8 +185,6 @@ function toggleTheme() {
     const themeIcon = themeBtn?.querySelector('.theme-icon');
     const themeIconMobile = themeBtnMobile?.querySelector('.theme-icon');
     
-    const iconText = isDarkMode ? '☾' : '☀';
-
     if (isDarkMode) {
         document.body.classList.remove('light-mode');
         if (themeIcon) themeIcon.textContent = '☾';
@@ -226,6 +223,8 @@ const MobileMenu = {
     isOpen: false,
     button: null,
     navLinks: null,
+    initialized: false,
+    retryTimer: null,
     
     // Initialize the menu
     init() {
@@ -233,34 +232,25 @@ const MobileMenu = {
         this.navLinks = document.getElementById('navLinks');
         
         if (!this.button || !this.navLinks) {
-            console.log('Menu elements not found, retrying...');
-            setTimeout(() => this.init(), 100);
+            if (!this.retryTimer) {
+                this.retryTimer = setTimeout(() => {
+                    this.retryTimer = null;
+                    this.init();
+                }, 100);
+            }
             return;
         }
+
+        if (this.initialized) return;
         
-        console.log('Mobile menu elements found, setting up listeners');
         this.setupEventListeners();
-        console.log('Mobile menu initialized successfully');
+        this.initialized = true;
     },
     
     // Setup all event listeners
     setupEventListeners() {
         // Button click handler - most important
         this.button.addEventListener('click', (e) => {
-            console.log('Menu button clicked');
-            e.preventDefault();
-            e.stopPropagation();
-            this.toggle();
-        });
-        
-        // Also handle touch start for better mobile support
-        this.button.addEventListener('touchstart', (e) => {
-            console.log('Menu button touched');
-            e.preventDefault();
-        });
-        
-        this.button.addEventListener('touchend', (e) => {
-            console.log('Menu button touch end');
             e.preventDefault();
             e.stopPropagation();
             this.toggle();
@@ -269,7 +259,6 @@ const MobileMenu = {
         // Close menu when clicking nav links
         this.navLinks.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
-                console.log('Nav link clicked');
                 if (this.isOpen) {
                     setTimeout(() => this.close(), 300);
                 }
@@ -282,7 +271,6 @@ const MobileMenu = {
                 e.target !== this.button &&
                 !this.button.contains(e.target) &&
                 !this.navLinks.contains(e.target)) {
-                console.log('Clicked outside, closing menu');
                 this.close();
             }
         });
@@ -290,7 +278,6 @@ const MobileMenu = {
         // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) {
-                console.log('Escape pressed, closing menu');
                 this.close();
             }
         });
@@ -298,7 +285,6 @@ const MobileMenu = {
     
     // Toggle menu open/close
     toggle() {
-        console.log('Toggle called, current state:', this.isOpen);
         if (this.isOpen) {
             this.close();
         } else {
@@ -308,7 +294,6 @@ const MobileMenu = {
     
     // Open the menu
     open() {
-        console.log('Opening menu');
         this.isOpen = true;
         this.button.classList.add('active');
         this.navLinks.classList.add('active');
@@ -318,7 +303,6 @@ const MobileMenu = {
     
     // Close the menu
     close() {
-        console.log('Closing menu');
         this.isOpen = false;
         this.button.classList.remove('active');
         this.navLinks.classList.remove('active');
@@ -328,20 +312,16 @@ const MobileMenu = {
 };
 
 // Initialize menu as soon as possible
-console.log('Initializing Mobile Menu...');
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOMContentLoaded fired');
         MobileMenu.init();
     });
 } else {
-    console.log('Document already loaded');
     MobileMenu.init();
 }
 
 // Also initialize when sections are loaded
 document.addEventListener('sectionsLoaded', () => {
-    console.log('Sections loaded event fired');
     MobileMenu.init();
 });
 
@@ -442,8 +422,8 @@ function initializeApp() {
     // Ensure dynamic age is applied on initial load
     try {
         updateAgeInPage();
-    } catch (e) {
-        console.error('Failed to update age on init', e);
+    } catch (_) {
+        // Age placeholders are optional.
     }
 }
 
@@ -578,6 +558,8 @@ function handleSectionsLoaded() {
     // Initialize chatbot
     initChatbot();
 
+    updateFooterYear();
+
     // Apply translations first, then initialize app
     if (typeof translations !== 'undefined' && currentLang) {
         translatePage(currentLang);
@@ -586,6 +568,13 @@ function handleSectionsLoaded() {
         }, 100);
     } else {
         initializeApp();
+    }
+}
+
+function updateFooterYear() {
+    const year = document.getElementById('footerYear');
+    if (year) {
+        year.textContent = new Date().getFullYear().toString();
     }
 }
 
@@ -699,36 +688,6 @@ function initCustomCursor() {
         document.body.classList.add('custom-cursor-enabled');
         updateCursor();
     }
-}
-
-// Also try to initialize if sections are already loaded when script runs
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            if (document.getElementById('nav-section')?.innerHTML) {
-                initParticles();
-                initScrollObserver();
-                initializeApp();
-            }
-            initCustomCursor();
-            initScrollToTop();
-            initProjectFilters();
-            initSeeMoreButton();
-            initContactForm();
-            initChatbot();
-        }, 500);
-    });
-} else {
-    // DOM already loaded, check if sections exist
-    setTimeout(() => {
-        if (document.getElementById('nav-section')?.innerHTML) {
-            initParticles();
-            initScrollObserver();
-            initializeApp();
-        }
-        initCustomCursor();
-        initChatbot();
-    }, 500);
 }
 
 // Scroll to Top Button
@@ -901,49 +860,94 @@ function updateSeeMoreButtonText() {
 }
 
 // Contact Form Handler
+let contactFormInitialized = false;
+
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
-    if (!contactForm) return;
+    if (!contactForm || contactFormInitialized) return;
 
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const formMessage = document.getElementById('formMessage');
         const formData = new FormData(contactForm);
-        
-        // Get form values
-        const name = formData.get('name');
-        const email = formData.get('email');
-        const subject = formData.get('subject');
-        const message = formData.get('message');
+        const submitButton = contactForm.querySelector('button[type="submit"]');
+        const config = window.CHATBOT_CONFIG || {};
+        const endpoint = typeof config.contactWebhookUrl === 'string' ? config.contactWebhookUrl.trim() : '';
 
-        // Simple validation
-        if (!name || !email || !subject || !message) {
-            formMessage.textContent = typeof translations !== 'undefined' && translations[currentLang] 
-                ? translations[currentLang].contact.formError 
-                : 'Please fill in all fields.';
+        const name = String(formData.get('name') || '').trim();
+        const email = String(formData.get('email') || '').trim();
+        const subject = String(formData.get('subject') || '').trim();
+        const message = String(formData.get('message') || '').trim();
+        const honeypot = String(formData.get('_gotcha') || '').trim();
+        const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        if (honeypot) {
+            contactForm.reset();
+            return;
+        }
+
+        if (!contactForm.checkValidity() || !name || !emailIsValid || !subject || !message) {
+            formMessage.textContent = typeof translations !== 'undefined' && translations[currentLang]
+                ? translations[currentLang].contact.formValidationError
+                : 'Please complete all fields with valid information.';
             formMessage.className = 'form-message error';
             return;
         }
 
-        // Create mailto link (you can replace this with actual form submission)
-        const mailtoLink = `mailto:your-email@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
-        window.location.href = mailtoLink;
+        if (!endpoint) {
+            formMessage.textContent = typeof translations !== 'undefined' && translations[currentLang]
+                ? translations[currentLang].contact.formError
+                : 'Error sending message. Please try again.';
+            formMessage.className = 'form-message error';
+            return;
+        }
 
-        // Show success message
-        formMessage.textContent = typeof translations !== 'undefined' && translations[currentLang]
-            ? translations[currentLang].contact.formSuccess
-            : 'Thank you! Your message has been sent.';
-        formMessage.className = 'form-message success';
-        
-        // Reset form
-        contactForm.reset();
+        const originalText = submitButton?.textContent || '';
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = typeof translations !== 'undefined' && translations[currentLang]
+                ? translations[currentLang].contact.formSending
+                : 'Sending message...';
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            formMessage.textContent = typeof translations !== 'undefined' && translations[currentLang]
+                ? translations[currentLang].contact.formSuccess
+                : 'Thank you! Your message has been sent.';
+            formMessage.className = 'form-message success';
+            contactForm.reset();
+        } catch (_) {
+            formMessage.textContent = typeof translations !== 'undefined' && translations[currentLang]
+                ? translations[currentLang].contact.formError
+                : 'Error sending message. Please try again.';
+            formMessage.className = 'form-message error';
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            }
+        }
 
         // Hide message after 5 seconds
         setTimeout(() => {
             formMessage.className = 'form-message';
         }, 5000);
     });
+
+    contactFormInitialized = true;
 }
 
 let chatbotInitialized = false;
@@ -977,78 +981,43 @@ function addChatMessage(role, content, className = '') {
 async function requestChatbotReply(userMessage) {
     const config = window.CHATBOT_CONFIG || {};
     const apiUrl = config.apiUrl || '';
-    const model = config.model || 'gpt-4o-mini';
-    const apiKey = typeof config.apiKey === 'string' ? config.apiKey.trim() : '';
-    const siteUrl = config.siteUrl || window.location.origin;
-    const siteName = config.siteName || 'Portfolio Chatbot';
-    const systemPrompt = config.systemPrompt || 'You are a portfolio assistant.';
-    const isOpenRouter = apiUrl.includes('openrouter.ai');
 
     if (!apiUrl) {
         throw new Error(getChatbotTranslation('chatbot.errorNoApiUrl', 'Missing API URL.'));
     }
 
-    const isPlaceholderKey = apiKey.toUpperCase().includes('PASTE_YOUR_OPENROUTER_KEY_HERE');
-
-    if (isOpenRouter && (!apiKey || isPlaceholderKey)) {
-        throw new Error(
-            getChatbotTranslation(
-                'chatbot.errorMissingOpenRouterKey',
-                'OpenRouter API key is missing. Add your key in window.CHATBOT_CONFIG.apiKey.'
-            )
-        );
-    }
-
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-
-    if (apiKey) {
-        headers.Authorization = `Bearer ${apiKey}`;
-    }
-
-    if (isOpenRouter) {
-        headers['HTTP-Referer'] = siteUrl;
-        headers['X-Title'] = siteName;
-    }
-
     const payload = {
-        model,
-        messages: [
-            { role: 'system', content: systemPrompt },
-            ...chatbotHistory.slice(-10),
-            { role: 'user', content: userMessage }
-        ],
-        temperature: typeof config.temperature === 'number' ? config.temperature : 0.2,
-        max_tokens: typeof config.maxTokens === 'number' ? config.maxTokens : 500
+        message: userMessage,
+        history: chatbotHistory.slice(-10)
     };
 
     const response = await fetch(apiUrl, {
         method: 'POST',
-        headers,
+        headers: {
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
         const errorJson = await response.json().catch(() => null);
-        const apiErrorMessage = errorJson?.error?.message || errorJson?.message || '';
+        const code = errorJson?.code || '';
 
-        if (response.status === 401 && isOpenRouter) {
-            throw new Error(
-                getChatbotTranslation(
-                    'chatbot.errorOpenRouterAuth',
-                    'OpenRouter authentication failed. Verify your API key in window.CHATBOT_CONFIG.apiKey.'
-                )
-            );
+        if (response.status === 429 || code === 'rate_limited') {
+            throw new Error(getChatbotTranslation('chatbot.errorRateLimit', 'Too many messages. Please wait a moment and try again.'));
         }
 
-        throw new Error(apiErrorMessage || `HTTP ${response.status}`);
+        if (response.status === 503 || code === 'missing_api_key') {
+            throw new Error(getChatbotTranslation('chatbot.errorBackendConfig', 'The chatbot backend is not configured yet.'));
+        }
+
+        throw new Error(errorJson?.error || errorJson?.message || `HTTP ${response.status}`);
     }
 
     const data = await response.json();
-    const answer = data?.choices?.[0]?.message?.content;
+    const answer = data?.answer;
     if (!answer || typeof answer !== 'string') {
-        throw new Error(getChatbotTranslation('chatbot.errorBadResponse', 'Invalid API response format.'));
+        throw new Error(getChatbotTranslation('chatbot.errorBadResponse', 'Invalid chatbot response format.'));
     }
 
     return answer.trim();

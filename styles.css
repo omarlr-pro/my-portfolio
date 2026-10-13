@@ -1225,7 +1225,7 @@ body.light-mode footer {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .hero h1 {
         font-size: 2.5rem;
     }
@@ -1595,7 +1595,7 @@ body.light-mode .filter-btn.active {
     display: none;
 }
 
-.projects-grid .project-card.project-more.show {
+.project-card.project-more.show {
     display: block;
 }
 
@@ -1740,6 +1740,26 @@ body.light-mode .form-group textarea:focus {
     background: rgba(239, 68, 68, 0.2);
     border: 1px solid rgba(239, 68, 68, 0.5);
     color: #ef4444;
+}
+
+.honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.section-load-error {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.12);
+    text-align: center;
 }
 
 /* Certifications Section */

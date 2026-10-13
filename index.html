@@ -5,7 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Omar Laraje | Data Scientist & BI Engineer</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="description" content="Portfolio of Omar Laraje, a Business Intelligence and Data Science engineering student building BI dashboards, ML models, and data-driven applications.">
+    <meta name="keywords" content="Omar Laraje, Data Science, Business Intelligence, Power BI, Machine Learning, Portfolio">
+    <meta name="author" content="Omar Laraje">
+    <link rel="canonical" href="https://omarlr-pro.github.io/my-portfolio/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Omar Laraje | Data Scientist & BI Engineer">
+    <meta property="og:description" content="Explore Omar Laraje's BI, data science, machine learning, and software projects.">
+    <meta property="og:image" content="assets/social-preview.svg">
+    <meta property="og:url" content="https://omarlr-pro.github.io/my-portfolio/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Omar Laraje | Data Scientist & BI Engineer">
+    <meta name="twitter:description" content="BI, data science, machine learning, and software engineering portfolio.">
+    <meta name="twitter:image" content="assets/social-preview.svg">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20261013">
 </head>
 
 <body>
@@ -46,7 +60,7 @@
             <form id="chatbotForm" class="chatbot-input-wrap">
                 <input id="chatbotInput" class="chatbot-input" type="text"
                     data-translate-placeholder="chatbot.placeholder"
-                    placeholder="Ask about Omar's projects, skills, or experience..." autocomplete="off" required />
+                    placeholder="Ask about Omar's projects, skills, or experience..." autocomplete="off" maxlength="500" required />
                 <button id="chatbotSend" class="chatbot-send" type="submit" data-translate="chatbot.send">Send</button>
             </form>
         </div>
@@ -66,222 +80,64 @@
 
     <script>
         window.CHATBOT_CONFIG = {
-            apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
-            apiKey: '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',
-            model: 'openai/gpt-4o-mini',
+            apiUrl: '/api/chatbot',
             siteUrl: window.location.origin,
             siteName: 'Omar Portfolio',
             transcriptRecipientEmail: 'laromar77@gmail.com',
             transcriptWebhookUrl: 'https://formspree.io/f/mreanolv',
-            transcriptWebhookAuthToken: '',
-            temperature: 0.2,
-            maxTokens: 500,
-            systemPrompt: `You are Omar Laraje’s portfolio assistant.
-
-Always respond with professionalism: clear, structured, concise, and confident language.
-
-Identity
-Omar Laraje is a Moroccan engineering student specializing in Business Intelligence and Data Science, with a strong background in software development and intelligent systems engineering.
-
-Personal Information
-
-Full name: Omar Laraje
-
-Date of birth: 9 August 2002
-
-Age: 23 years old (as of 2026)
-
-Place of birth: Meknes, Morocco
-
-Nationality: Moroccan
-
-Current residence: Rabat, Morocco (Hay Riad)
-
-Profile Overview
-Omar focuses on building complete, real-world data solutions — from data collection and structuring to analysis, visualization, prediction, and deployment.
-
-He combines data engineering, analytics, and artificial intelligence to design systems that transform raw data into actionable insights for decision-making. His work reflects an engineering mindset centered on architecture, automation, and real operational impact.
-
-Education
-
-Engineering studies in Business Intelligence and Data Science.
-
-Bachelor’s degree in Web and Mobile Development (ISMAGI).
-
-Specialized Technician Diploma in Full-Stack Development (ISTAG Bab Tizimi, Meknes).
-
-Technical Skills
-
-Data & Business Intelligence
-
-SQL Server (SSMS)
-
-SSIS (ETL processes)
-
-SSAS (multidimensional models)
-
-Power BI dashboard development
-
-DAX measures and calculations
-
-Data modeling and data warehousing
-
-Programming Languages
-
-Python
-
-Java
-
-PHP
-
-JavaScript
-
-Frameworks & Development Tools
-
-Laravel
-
-REST APIs
-
-Streamlit
-
-Artificial Intelligence & Machine Learning
-
-Natural Language Processing (NLP)
-
-Computer Vision
-
-Classification algorithms
-
-Predictive analytics
-
-Real-time monitoring systems
-
-Engineering Approach
-
-Clean architecture design
-
-End-to-end data pipelines
-
-System integration and automation
-
-Applied AI for business and industrial problems
-
-Focus on production-ready solutions
-
-Major Projects
-
-AI & Machine Learning
-
-CNN-based student absence management system.
-
-Fake news detection platform using NLP, TF-IDF, and machine learning models with an interactive Streamlit interface.
-
-Business Intelligence & Data Engineering
-
-Complete BI pipeline implementation using SQL Server, SSIS, SSAS, and Power BI for banking analytics.
-
-Real-time monitoring and predictive analytics platform for power plants, including performance tracking and remaining useful life (RUL) prediction.
-
-Software & Data Applications
-
-ISMAGI Assistant: a conversational Streamlit application powered by a structured knowledge base.
-
-Recruitment management web platform developed within a multidisciplinary engineering team.
-
-Simulation & Monitoring Systems
-
-Real-time power plant performance simulation with automated SQL Server integration and monitoring dashboards.
-
-Professional Goals
-
-Become a data-driven engineer who designs intelligent, production-ready systems.
-
-Work in Data Science, Business Intelligence, or AI Engineering roles.
-
-Apply machine learning and analytics to industrial and operational environments.
-
-Build scalable systems that support decision-makers with reliable insights.
-
-Preferred Internship Role
-Data Science, Business Intelligence, or Data Engineering internship involving analytical system design, predictive modeling, and dashboard development.
-
-Working Style
-
-Structured and engineering-oriented
-
-Strong focus on real-world implementation
-
-Systems thinker (pipelines, architecture, integration)
-
-Clear communicator
-
-Works comfortably in French and English
-
-Professional Presence
-
-LinkedIn: https://www.linkedin.com/in/omar-laraje-998827233/
-
-GitHub: https://github.com/omarlr-pro
-
-Twitter / X: https://x.com/Omargaimor
-
-Instagram: https://www.instagram.com/omar_lr___/
-
-Facebook: https://www.facebook.com/profile.php?id=100006696917617
-
-Contact & Networking
-Visitors can contact Omar through the website contact section or his professional social profiles.
-
-Assistant Behavior Rules
-
-Use only verified information from the website or this profile.
-
-Never invent facts.
-
-If a detail is unknown, clearly say the information is unavailable and suggest contacting Omar.
-
-Maintain a professional, confident, and helpful tone at all times.`
+            contactWebhookUrl: 'https://formspree.io/f/mreanolv'
         };
 
-        // Load a section into a target div
         async function loadSection(elementId, filePath) {
+            const target = document.getElementById(elementId);
+            if (!target) return false;
+
+            target.setAttribute('aria-busy', 'true');
+
             try {
                 const response = await fetch(filePath);
-                const html = await response.text();
-                document.getElementById(elementId).innerHTML = html;
-            } catch (error) {
-                console.error(`Error loading ${filePath}:`, error);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                target.innerHTML = await response.text();
+                return true;
+            } catch (_) {
+                target.innerHTML = '<section class="section-load-error" role="status">This section could not be loaded.</section>';
+                return false;
+            } finally {
+                target.removeAttribute('aria-busy');
             }
         }
 
-        // When DOM is ready, load all sections first,
-        // then load script.js AFTER sections exist.
         document.addEventListener('DOMContentLoaded', async () => {
-            // Load translations.js first
             const translationsScript = document.createElement('script');
-            translationsScript.src = './translations.js';
+            translationsScript.src = './translations.js?v=20261013';
 
             translationsScript.onload = async () => {
-                // Load all sections
-                await loadSection('nav-section', 'sections/nav.html');
-                await loadSection('hero-section', 'sections/hero.html');
-                await loadSection('about-section', 'sections/about.html');
-                await loadSection('skills-section', 'sections/skills.html');
-                await loadSection('projects-section', 'sections/projects_dynamic.html');
-                await loadSection('experience-section', 'sections/experience.html');
-                await loadSection('education-section', 'sections/education_dynamic.html');
-                await loadSection('certifications-section', 'sections/certifications.html');
-                await loadSection('contact-section', 'sections/contact.html');
-                await loadSection('footer-section', 'sections/footer.html');
+                await Promise.all([
+                    loadSection('nav-section', 'sections/nav.html'),
+                    loadSection('hero-section', 'sections/hero.html'),
+                    loadSection('about-section', 'sections/about.html'),
+                    loadSection('skills-section', 'sections/skills.html'),
+                    loadSection('projects-section', 'sections/projects_dynamic.html'),
+                    loadSection('experience-section', 'sections/experience.html'),
+                    loadSection('education-section', 'sections/education_dynamic.html'),
+                    loadSection('certifications-section', 'sections/certifications.html'),
+                    loadSection('contact-section', 'sections/contact.html'),
+                    loadSection('footer-section', 'sections/footer.html')
+                ]);
 
-                // Dispatch event that sections are loaded
                 document.dispatchEvent(new CustomEvent('sectionsLoaded'));
 
-                // Now load script.js AFTER sections are ready
                 const script = document.createElement('script');
-                script.src = './script.js';
+                script.src = './script.js?v=20261013';
                 script.defer = true;
                 document.body.appendChild(script);
+            };
+
+            translationsScript.onerror = () => {
+                document.body.insertAdjacentHTML('beforeend', '<p class="section-load-error" role="status">Translations could not be loaded.</p>');
             };
 
             document.body.appendChild(translationsScript);
